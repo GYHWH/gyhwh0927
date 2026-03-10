@@ -1,42 +1,193 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>快来回答！</title>
+    <title>重要问题！</title>
     <style>
-        body { background: #ffebee; text-align: center; font-family: sans-serif; padding-top: 100px; overflow: hidden; }
-        .box { background: white; width: 80%; max-width: 400px; margin: auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        button { padding: 10px 25px; font-size: 18px; margin: 10px; border: none; border-radius: 10px; cursor: pointer; }
-        #yes { background: #ff4081; color: white; }
-        #no { background: #eee; position: absolute; transition: 0.1s; left: 50%; margin-left: 20px; }
-        #msg { color: #ff4081; margin-top: 20px; font-weight: bold; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            position: relative;
+        }
+
+        .heart {
+            font-size: 60px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .question {
+            font-size: 24px;
+            color: #555;
+            margin-bottom: 40px;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            position: relative;
+            min-height: 80px;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            position: relative;
+        }
+
+        #yesBtn {
+            background: #ff6b6b;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        #yesBtn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        #noBtn {
+            background: #e0e0e0;
+            color: #666;
+            position: absolute;
+            left: 50%;
+            transform: translateX(calc(-50% + 100px));
+            transition: all 0.2s ease-out;
+        }
+
+        .message {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #888;
+            min-height: 30px;
+        }
+
+        .count {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .final-message {
+            display: none;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .emoji-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .falling-emoji {
+            position: absolute;
+            font-size: 30px;
+            animation: fall linear;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="count" id="attemptCount">尝试次数: 0</div>
+    
+    <div class="container" id="mainContainer">
+        <div class="heart">💖</div>
+        <h1>亲爱的，我有个问题想问你...</h1>
+        <div class="question">你愿意永远做我的专属工具人吗？<br>（负责拎包、买奶茶、清空购物车那种）</div>
+        
+        <div class="buttons">
+            <button id="yesBtn" onclick="sayYes()">我愿意！</button>
+            <button id="noBtn" onmouseover="moveButton()" onclick="tryNo()">不愿意</button>
+        </div>
+        
+        <div class="message" id="message"></div>
+    </div>
 
-<div class="box" id="content">
-    <h1>💖</h1>
-    <h2>做我的小猪好不好？</h2>
-    <button id="yes" onclick="win()">好哒</button>
-    <button id="no" onmouseover="move()" onclick="move()">不好</button>
-    <div id="msg"></div>
-</div>
+    <div class="container final-message" id="finalMessage">
+        <div class="heart">🎉</div>
+        <h1>我就知道你会同意的！</h1>
+        <div class="question">
+            合同已生效，反悔要赔违约金<br>
+            （违约金 = 一辈子对我好）<br><br>
+            <span style="font-size: 16px; color: #999;">截图保存作为证据 😈</span>
+        </div>
+        <button onclick="location.reload()" style="background: #667eea; color: white; margin-top: 20px;">重新考虑（假的）</button>
+    </div>
 
-<script>
-    function move() {
-        const btn = document.getElementById('no');
-        const x = Math.random() * (window.innerWidth - btn.offsetWidth);
-        const y = Math.random() * (window.innerHeight - btn.offsetHeight);
-        btn.style.left = x + 'px';
-        btn.style.top = y + 'px';
-        document.getElementById('msg').innerText = "躲得掉吗？😏";
-    }
+    <div class="emoji-rain" id="emojiRain"></div>
 
-    function win() {
-        document.getElementById('content').innerHTML = "<h1>🎉 耶！</h1><p>合同已生效，这辈子赖掉没门！</p>";
-    }
-</script>
+    <script>
+        let attempts = 0;
+        const messages = [
+            "哎呀，手滑了～",
+            "这个按钮好像坏了呢 🤔",
+            "再试一次？",
+            "哈哈，点不到吧！",
+            "放弃吧，你逃不掉的 😏",
+            "按钮说你太可爱了，不想让你点",
+            "系统提示：此选项已被封印",
+            "别挣扎了，乖乖点愿意吧 💕",
+            "你的鼠标不听使唤了吗？",
+            "这是命运的安排！"
+        ];
 
-</body>
-</html>
+        const noBtn = doc
